@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <base target="_blank">
+    <script>
+      // Prevent forms from submitting.
+      function preventFormSubmit() {
+        var forms = document.querySelectorAll('form');
+        for (var i = 0; i < forms.length; i++) {
+          forms[i].addEventListener('submit', function(event) {
+            event.preventDefault();
+          });
+        }
+      }
+
+      window.addEventListener('load', preventFormSubmit);
+
+      function isNumber(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+      }
+
+      function validateForm(formObj, callback) {
+        var errorEle = document.getElementById('count-error');
+        var invalid = false;
+        errorEle.innerHTML = '';
+
+        if (!formObj.videoCount.value) {
+          errorEle.innerHTML = 'Video count can\'t be empty';
+          invalid = true;
+        } else if (!isNumber(formObj.videoCount.value)) {
+          errorEle.innerHTML = 'Video count must be an integer';
+          invalid = true;
+        }
+
+        callback(invalid);
+      }
+
+      function handleFormSubmit(formObject) {
+        validateForm(formObject, function (err) {
+          if (!err) {
+            google.script.run.withSuccessHandler(closeDialog).updateVideoCount(formObject);
+          }
+        });
+      }
+
+      function closeDialog() {
+        google.script.host.close();
+      }
+    </script>
+  </head>
+  <body>
+    <form id="channelVideoLimitForm" onsubmit="handleFormSubmit(this)">
+      <br />
+      <div class="block form-group">
+        <input name="videoCount" id="videoCount" type="text" value="<?!= count ?>">
+      </div>
+
+      <span class="error" id="count-error"></span>
+
+      <br /><br />
+
+      <input class="action" type="submit" value="Submit" style="margin-right: 10px"/>
+      <button style="margin-right: 10px" onclick="google.script.host.close();">Close</button>
+      <a class="button" href="https://www.syncwithtech.org/track-youtube-videos-channels/" onclick="google.script.host.close();">
+        &nbsp; Help &nbsp;
+      </a>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "timeZone": "Asia/Calcutta",
+  "dependencies": {
+    "enabledAdvancedServices": [
+      {
+        "userSymbol": "YouTube",
+        "serviceId": "youtube",
+        "version": "v3"
+      }
+    ]
+  },
+  "exceptionLogging": "STACKDRIVER"
+}

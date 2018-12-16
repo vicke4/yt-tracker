@@ -1,0 +1,53 @@
+{
+  "name": "yt-tracker",
+  "version": "0.0.1",
+  "description": "One-stop shop for your YouTube videos/channels statistics & tracking",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack -p",
+    "upload": "clasp push",
+    "buildWatch": "webpack -p --watch",
+    "pushWatch": "clasp push --watch",
+    "deploy": "npm run build && npm run upload"
+  },
+  "author": "Ganapathy S",
+  "license": "ISC",
+  "keywords": [
+    "google-apps-script",
+    "gsuite",
+    "apps-script",
+    "youtube",
+    "youtube-statistics"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.1.6",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-member-expression-literals": "^7.0.0",
+    "@babel/plugin-transform-object-assign": "^7.0.0",
+    "@babel/plugin-transform-property-literals": "^7.0.0",
+    "@babel/preset-env": "^7.1.6",
+    "@google/clasp": "^1.6.3",
+    "@types/google-apps-script": "^0.0.32",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.4",
+    "babel-plugin-add-module-exports": "^1.0.0",
+    "babel-plugin-array-includes": "^2.0.3",
+    "clean-webpack-plugin": "^1.0.0",
+    "copy-webpack-plugin": "^4.6.0",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-loader": "^2.1.1",
+    "eslint-plugin-googleappsscript": "^1.0.1",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^3.0.0",
+    "gas-lib": "^2.0.2",
+    "gas-webpack-plugin": "^0.3.0",
+    "prettier": "^1.15.2",
+    "uglifyjs-webpack-plugin": "^2.0.1",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2"
+  }
+}
