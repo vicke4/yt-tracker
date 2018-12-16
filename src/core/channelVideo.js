@@ -174,13 +174,20 @@ export const addVideo = (sheet, ids, sheetInfo, insertRow) => {
 
 export const addChannel = (sheet, ids, sheetInfo, insertRow, fromRefresh) => {
   const response = getResponse('channel', ids);
-  //  Logger.log('YouTube Channels');
-  //  Logger.log(response);
-
   const sheetValues = [];
-  const { items } = response;
+  const { items: respItems } = response;
   const { abbreviate } = sheetInfo;
   const channelUploadMapping = getSetProperty('channelUploadMapping', 'user', 'json') || {};
+
+  // Ordering response according to input
+  let items = [];
+  const idList = ids.split(',');
+
+  respItems.forEach(i => {
+    items[idList.indexOf(i.id)] = i;
+  });
+
+  items = items.filter(item => item);
 
   if (items && items.length > 0) {
     for (let i = 0; i < items.length; i += 1) {
