@@ -158,8 +158,6 @@ export const addVideo = (sheet, ids, sheetInfo, insertRow) => {
     const videoIds = idList.slice(i, i + chunk).join();
     const response = getResponse('video', videoIds);
 
-    //    Logger.log(response);
-
     updateSheetValuesVidoes(
       response.items,
       sheetValues,
@@ -221,9 +219,6 @@ export const addChannel = (sheet, ids, sheetInfo, insertRow, fromRefresh) => {
     }
   }
 
-  Logger.log('Here channel upload mapping');
-  Logger.log(channelUploadMapping);
-
   try {
     getSetProperty('channelUploadMapping', 'user', 'json', 'set', channelUploadMapping);
   } catch (e) {
@@ -252,13 +247,10 @@ export const fetchChannelVideos = (channlId, shet, programmaticUpdate) => {
     channelId = sheet.getRange(range.getRow(), 1).getValue();
   }
 
-  Logger.log(sheetInfo.channels.sheetId !== sheet.getSheetId());
-  Logger.log(sheetInfo);
   const playlistId = channelUploadMapping[channelId]
     ? channelUploadMapping[channelId].playlistId
     : null;
-  Logger.log('Playlist ID');
-  Logger.log(playlistId);
+
   if (
     !sheetInfo.channels ||
     (sheetInfo.channels.sheetId !== sheet.getSheetId() && !programmaticUpdate) ||
@@ -286,9 +278,6 @@ export const fetchChannelVideos = (channlId, shet, programmaticUpdate) => {
 
     channelUploadMapping[channelId].sheetId = sheet.getSheetId();
     channelUploadMapping[channelId].requested = true;
-    Logger.log('Saving with sheet id');
-    Logger.log(sheet.getSheetId());
-    Logger.log(channelUploadMapping);
     getSetProperty('channelUploadMapping', 'user', 'json', 'set', channelUploadMapping);
   }
 

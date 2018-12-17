@@ -89,7 +89,6 @@ export const getSetProperty = (key, type, dataType, action, value) => {
 };
 
 const insertHeader = (headerValues, sheet, columnCount, type) => {
-  //  Logger.log(headerValues);
   const sheetRange = sheet.getRange(type === 1 ? 1 : 2, 1, 1, columnCount);
   const hexColour = type === 1 ? '#FF0000' : '#00FF00';
 

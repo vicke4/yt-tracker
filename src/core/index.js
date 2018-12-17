@@ -19,7 +19,6 @@ import { addChannel, addVideo, fetchChannelVideos } from './channelVideo';
  * @param {Object} e event object with authentication info.
  */
 export const setMenuItems = e => {
-  //  Logger.log('Came inside set menu');
   const menu = SpreadsheetApp.getUi().createAddonMenu();
   const menuObj = [
     { name: 'Track YouTube Videos', functionName: 'trackVideos' },
@@ -27,7 +26,6 @@ export const setMenuItems = e => {
   ];
 
   if (e && e.authMode !== ScriptApp.AuthMode.NONE) {
-    //    Logger.log('Came inside if e auth block');
     const sheetInfo = getSetProperty('sheetInfo', 'user', 'json');
     if (!sheetInfo) getSetProperty('autoRefresh', 'user', 'bool', 'set', true);
     const addExtraMenu =
@@ -35,10 +33,7 @@ export const setMenuItems = e => {
     const abbreviate = getSetProperty('abbreviate', 'user', 'bool');
     const autoRefresh = getSetProperty('autoRefresh', 'user', 'bool');
     const disableThumbnail = getSetProperty('disableThumbnail', 'user', 'bool');
-    //    Logger.log('Extra menu');
-    //    Logger.log(addExtraMenu);
-    //    Logger.log(sheetInfo.spreadsheetId);
-    //    Logger.log(SpreadsheetApp.getActive().getId());
+
     if (addExtraMenu) {
       menuObj.push(
         { name: 'Fetch Channel Videos', functionName: 'fetchChannelVideos' },
@@ -81,17 +76,19 @@ export const setMenuItems = e => {
  * Creates triggers.
  *
  */
-const setTriggers = () => {
+const setTrigger = type => {
   try {
-    ScriptApp.newTrigger('onEditTrigger')
-      .forSpreadsheet(SpreadsheetApp.getActive())
-      .onEdit()
-      .create();
-
-    ScriptApp.newTrigger('onOpenTrigger')
-      .forSpreadsheet(SpreadsheetApp.getActive())
-      .onOpen()
-      .create();
+    if (type === 'edit') {
+      ScriptApp.newTrigger('onEditTrigger')
+        .forSpreadsheet(SpreadsheetApp.getActive())
+        .onEdit()
+        .create();
+    } else if (type === 'open') {
+      ScriptApp.newTrigger('onOpenTrigger')
+        .forSpreadsheet(SpreadsheetApp.getActive())
+        .onOpen()
+        .create();
+    }
   } catch (e) {
     Logger.log('Error while setting trigger', e);
   }
@@ -122,8 +119,6 @@ const insertNewSheet = (spreadsheet, type, sheetInf) => {
 
 const activateSheet_ = type => {
   const sheetInfo = getSheetInfo();
-  Logger.log(sheetInfo);
-  Logger.log('Type here', type);
   const spreadsheet = SpreadsheetApp.getActive();
   const isChannel = type === 'Channels';
   const getSheetDisplayToast = () => {
@@ -137,6 +132,16 @@ const activateSheet_ = type => {
     );
 
     return insertNewSheet(spreadsheet, type, sheetInfo);
+  };
+  const checkSetTriggers = () => {
+    const autoRefresh = getSetProperty('autoRefresh', 'user', 'bool');
+    const triggerList = ScriptApp.getUserTriggers(spreadsheet).map(t => t.getHandlerFunction());
+    const openTrigger = triggerList.indexOf('onOpenTrigger') === -1 && autoRefresh;
+    const editTrigger = triggerList.indexOf('onEditTrigger') === -1;
+
+    if (openTrigger) setTrigger('open');
+    if (editTrigger) setTrigger('edit');
+    if (openTrigger || editTrigger) setMenuItems({ authMode: ScriptApp.AuthMode.FULL });
   };
 
   let sheet;
@@ -167,21 +172,13 @@ const activateSheet_ = type => {
 
   if (!sheetInfo || !sheetInfo[type.toLowerCase()]) {
     sheet = getSheetDisplayToast();
-    Logger.log("Sheet doesn't exist creating one");
-    Logger.log(ScriptApp.getUserTriggers(spreadsheet).length);
-
-    if (ScriptApp.getUserTriggers(spreadsheet).length === 0) {
-      Logger.log('Setting triggers');
-      setTriggers();
-      setMenuItems({ authMode: ScriptApp.AuthMode.FULL });
-    }
+    checkSetTriggers();
   } else {
-    Logger.log('Unfortunate else!!!');
     sheet = getSheet(spreadsheet, sheetInfo[type.toLowerCase()].sheetId);
-    Logger.log(sheet);
 
     if (!sheet) {
       if (newTrackingSheet) sheetInfo.spreadsheetId = spreadsheet.getId();
+      checkSetTriggers();
 
       sheet = getSheetDisplayToast();
     }
@@ -200,12 +197,9 @@ export const trackChannels = () => {
 };
 
 export const changeChannelVideoCount = () => {
-  Logger.log('Coming here');
-  const letIn = activateSheet_('Channels');
-  Logger.log(letIn);
-  // if (!letIn) {
+  activateSheet_('Channels');
   const count = getSetProperty('channelVideoCount', 'user') || 500;
-  Logger.log(count);
+
   try {
     SpreadsheetApp.getUi().showModalDialog(
       getChannelVideoCountHTML(count),
@@ -214,7 +208,6 @@ export const changeChannelVideoCount = () => {
   } catch (e) {
     Logger.log(e);
   }
-  // }
 };
 
 const getValidIds = (sheet, fromChannelVideos) => {
@@ -235,8 +228,7 @@ const getValidIds = (sheet, fromChannelVideos) => {
 const refreshChannelVideoSheet = (spreadsheet, sheet, type, sheetInfo, replaceHeaders, idLst) => {
   const idList = idLst || getValidIds(sheet, true);
   const channelUploadMapping = getSetProperty('channelUploadMapping', 'user', 'json');
-  Logger.log(idList);
-  Logger.log(channelUploadMapping);
+
   for (let i = 0; i < idList.length; i += 1) {
     const channelInfo = channelUploadMapping[idList[i]];
     const requested = channelInfo ? channelInfo.requested : null;
@@ -275,10 +267,6 @@ const refreshSheet = (spreadsheet, type, sheetInfo, replaceHeaders, idList, from
       reset(sheet);
       insertHeaders(sheet, type, sheetInfo);
     }
-
-    Logger.log('Check the ids here');
-    Logger.log(type);
-    Logger.log(ids);
 
     const func = type === 'Videos' ? addVideo : addChannel;
     //    if (ids.length > 0) func(sheet, ids.join(), sheetInfo, 3, true);
@@ -441,11 +429,6 @@ export const onEditTrigger = e => {
 
     const cell = e.range.getA1Notation();
 
-    //    Logger.log(cell);
-    //    Logger.log(e.range.getRow());
-    //    Logger.log(e.range.getLastRow());
-    //    Logger.log(cell.length);
-    //    Logger.log(e.value);
     if (cell[0] !== 'A') return;
     if (cell.length === 2 && e.value === '') return;
 
@@ -476,25 +459,17 @@ export const onEditTrigger = e => {
     }, '');
 
     activeRange.setValues(emptyValues);
-    //    Logger.log('Check the channel ids');
-    //    Logger.log(ids);
-    //    Logger.log('Check the cell');
-    //    Logger.log(cell);
-    //
+
     let i;
-
     let j;
-
     let temparray;
-
     const chunk = 50;
     const array = ids.split(',');
     let cellPosition = Number(cell.split(':')[0].substr(1));
+
     for (i = 0, j = array.length; i < j; i += chunk) {
       temparray = array.slice(i, i + chunk);
       ids = temparray.join();
-      Logger.log('Check ids');
-      Logger.log(ids);
 
       if (sheetIndex === 0) addVideo(sheet, ids, sheetInfo, cellPosition);
       else addChannel(sheet, ids, sheetInfo, cellPosition);
@@ -502,7 +477,6 @@ export const onEditTrigger = e => {
       cellPosition += chunk;
     }
   } catch (er) {
-    Logger.log('here itself');
     Logger.log(er);
   }
 };
